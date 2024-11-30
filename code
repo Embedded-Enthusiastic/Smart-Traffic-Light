@@ -1,0 +1,71 @@
+// Pin definitions
+const int redPinMain = 2;
+const int yellowPinMain = 3;
+const int greenPinMain = 4;
+
+const int redPinSide = 5;
+const int greenPinSide = 6;
+
+const int sensorMain = 7;       // Sensor for main road
+const int sensorSide = 8;       // Sensor for side road
+const int pedestrianSensor = 9; // Sensor for pedestrian detection
+
+const int buzzerPin = 10;       // Buzzer pin
+
+void setup() {
+  pinMode(redPinMain, OUTPUT);
+  pinMode(yellowPinMain, OUTPUT);
+  pinMode(greenPinMain, OUTPUT);
+  
+  pinMode(redPinSide, OUTPUT);
+  pinMode(greenPinSide, OUTPUT);
+  
+  pinMode(sensorMain, INPUT);
+  pinMode(sensorSide, INPUT);
+  pinMode(pedestrianSensor, INPUT);
+  
+  pinMode(buzzerPin, OUTPUT);
+
+  // Initial state: Main road green, side road red
+  digitalWrite(greenPinMain, HIGH);
+  digitalWrite(redPinSide, HIGH);
+  digitalWrite(buzzerPin, LOW);
+}
+
+void loop() {
+  int mainTraffic = digitalRead(sensorMain);
+  int sideTraffic = digitalRead(sensorSide);
+  int pedestrianDetected = digitalRead(pedestrianSensor);
+
+  // If pedestrian detected during any green light, activate buzzer
+  if ((digitalRead(greenPinMain) == HIGH || digitalRead(greenPinSide) == HIGH) && pedestrianDetected == HIGH) {
+    digitalWrite(buzzerPin, HIGH);  // Activate buzzer
+  } else {
+    digitalWrite(buzzerPin, LOW);   // Deactivate buzzer
+  }
+
+  // If side road has traffic and main road is clear
+  if (sideTraffic == HIGH && mainTraffic == LOW) {
+    // Change to yellow on main road
+    digitalWrite(greenPinMain, LOW);
+    digitalWrite(yellowPinMain, HIGH);
+    delay(2000);  // Yellow light duration
+    
+    // Main road red, side road green
+    digitalWrite(yellowPinMain, LOW);
+    digitalWrite(redPinMain, HIGH);
+    digitalWrite(redPinSide, LOW);
+    digitalWrite(greenPinSide, HIGH);
+    delay(5000);  // Side road green duration
+
+    // Return to main road green
+    digitalWrite(greenPinSide, LOW);
+    digitalWrite(redPinSide, HIGH);
+    digitalWrite(redPinMain, LOW);
+    digitalWrite(greenPinMain, HIGH);
+  } else {
+    // Keep main road green if no side traffic
+    digitalWrite(greenPinMain, HIGH);
+    digitalWrite(redPinSide, HIGH);
+  }
+}
